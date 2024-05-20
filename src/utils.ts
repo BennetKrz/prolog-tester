@@ -46,6 +46,7 @@ export function getLabelFromTestSuitFile(file: Uri | TextDocument): string {
         const match = line.match(regex);
         if(match && match[1]){
             result = match[1];
+            break;
         }
     }
     return result;
