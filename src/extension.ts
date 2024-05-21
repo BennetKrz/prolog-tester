@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const test = queue.shift();
 			if(test){
 				run.started(test);
-				var testResult: TestResult = await runTest(test);
+				var testResult: TestResult = await runTest(run, test);
 				if(token.isCancellationRequested){
 					run.skipped(test);
 				} else if(testResult){
