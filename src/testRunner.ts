@@ -1,26 +1,42 @@
-import { TestItem, TestRun } from "vscode";
+import { ExtensionKind, TestItem, TestRun } from "vscode";
 import { TestResult, TestResultKind } from "./testResult";
+import { ExecException, ExecSyncOptionsWithStringEncoding, exec, execSync, spawn, spawnSync } from "child_process";
 
 export async function runTest(run: TestRun, test: TestItem): Promise<TestResult> {
     //Hat children -> ist eine test suit, können alle aufeinmal laufen
     if(test.children && test.children.size > 0){
         console.log("Test Suit: " + test.uri?.fsPath);
-        
-        var tests: TestItem[] = [];
-        test.children.forEach(item => {
-            tests.push(item);
+
+        var testSuitName: string = test.label;
+
+        test.children.forEach(test => {
+            run.started(test);
         });
 
-        for(var t of tests){
-            run.started(t);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            run.passed(t);
+        try {
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests -> true ; true)" -t halt`;
+
+            const result = execSync(command, {encoding: 'utf-8'});
+            parseTestResults("result.status?.toString()");
+        } catch (e){
+            console.log("Error executing tests: " + e);
         }
-        
     } else { //Nur einzelner test
         console.log("Einzelner Test" + test.uri?.fsPath);
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    return new TestResult(TestResultKind.Passed, "Hallo Welt", Date.now(), Date.now());
+    return new TestResult(TestResultKind.Passed, "Error Text", "warningText", "TestSuitName", "TestName", Date.now(), Date.now());
 }
+
+function parseTestResults(stdout: string) {
+    var lines: string[] = stdout.split("\n");
+    var line: string
+    return "";
+}
+
+//Alle tests
+//swipl -s geradeVorfahrtTest.pl -g run_tests -t halt
+
+//Ein bestimmter test
+//swipl -s geradeVorfahrtTest.pl -g "run_tests(geradeVorfahrtTest:0)" -t halt
