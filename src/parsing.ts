@@ -1,8 +1,8 @@
 import { TextDocument } from "vscode";
 import * as fs from "fs";
 
-export function parseTestsInFile(file: String | TextDocument): Set<string>{
-    var content: string = file instanceof String ? fs.readFileSync(file as string).toString() : file.getText();
+export function parseTestsInFile(file: string | TextDocument): Set<string>{
+    var content: string = typeof file === "string" ? fs.readFileSync(file as string).toString() : file.getText();
     var lines: string[] = content.split("\n");
 
     const regex = /.*test\(([^)]+)\).*/;

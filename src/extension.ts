@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
-import { TestItem, TextDocument, Uri } from 'vscode';
-import { discoverAllFilesInWorkspace, getAllFilesWithEnding, getLabelFromTestSuitFile, isValidTestFile } from './Utils';
+import { CancellationToken, TestItem, TestRun, TestRunRequest, TextDocument, Uri } from 'vscode';
+import { discoverAllFilesInWorkspace, getLabelFromTestSuitFile, isValidTestFile } from './utils';
 import { parseTestsInFile } from './parsing';
+import { runTest } from './testRunner';
+import { TestResult } from './testResult';
 
 var testSuits: Map<string, TestItem> = new Map<string, TestItem>();
 
@@ -29,18 +31,45 @@ export function activate(context: vscode.ExtensionContext) {
 			runHandler(request, token);
 		}
 	);
-
+	
 	console.log('Congratulations, your extension "prolog-tester" is now active!');
-
+	
 	let disposable = vscode.commands.registerCommand('prolog-tester.helloWorld', () => {
 		vscode.window.showInformationMessage('Hello World from Prolog Tester!');
 	});
-
+	
 	context.subscriptions.push(ctrl);
 	context.subscriptions.push(disposable);
 	
-	function runHandler(request: vscode.TestRunRequest, token: vscode.CancellationToken) {
-		throw new Error('Function not implemented.');
+	async function runHandler(request: TestRunRequest, token: CancellationToken){
+		const run: TestRun = ctrl.createTestRun(request);
+		const queue: TestItem[] = [];
+
+		var source = request.include ? request.include : ctrl.items;
+		source.forEach(test => {
+			queue.push(test);
+		});
+
+		token.onCancellationRequested(() => {
+			queue.forEach(test => {
+				run.skipped(test);
+			});
+			run.end();
+		});
+
+		while(queue.length > 0 && !token.isCancellationRequested){
+			const test = queue.shift();
+			if(test){
+				run.started(test);
+				var testResult: TestResult = await runTest(test);
+				if(token.isCancellationRequested){
+					run.skipped(test);
+				} else if(testResult){
+					run.passed(test);
+				}
+			}
+		}
+		run.end();
 	}
 	
 	function parseTestsInDocument(document: vscode.TextDocument | undefined): void {
@@ -78,52 +107,4 @@ export function activate(context: vscode.ExtensionContext) {
 	}	
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
-
-
-/*
-	async function runHandler (request: vscode.TestRunRequest, token: vscode.CancellationToken) {
-		const run = controller.createTestRun(request);
-		const queue: vscode.TestItem[] = [];
-		
-		if(request.include){
-			request.include.forEach(item => queue.push(item));
-		} else {
-			controller.items.forEach(item => queue.push(item));
-		}
-		
-		token.onCancellationRequested(() => {
-			queue.forEach(test => run.skipped(test));
-			run.end();
-		});
-		
-		while(queue.length > 0 && !token.isCancellationRequested){
-			const test = queue.shift();
-        	if (test) {
-            	// Simulate test running
-            	run.started(test);
-            	var testResult: testResult = await runTest(test);
-            	if (token.isCancellationRequested) {
-            	    run.skipped(test);
-            	} else if(testResult) {
-            	    run.passed(test);
-            	}
-        	}
-		}
-		run.end();
-		console.log("Cancelled");
-		var i = 0;
-	};
-
-	async function runTest(test: vscode.TestItem): Promise<testResult> {
-	//Hat childelements -> dies ist eine datei
-	if(test.children){
-
-	} else {	//Hat keine Kinder, ist also ein einzelner test
-
-	}
-	return new testResult(TestResultKind.Passed, "sdflkj", Date.now(), Date.now());
-}
-
-*/

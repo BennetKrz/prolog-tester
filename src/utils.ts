@@ -3,9 +3,9 @@ import { TextDocument, Uri } from "vscode";
 import * as fs from "fs";
 import { parseTestsInFile } from './parsing';
 
-export function discoverAllFilesInWorkspace() {
+export async function discoverAllFilesInWorkspace() {
     var validTestFiles: Uri[] = [];
-    getAllFilesWithEnding().then(files => {
+    await getAllFilesWithEnding().then(files => {
         files.forEach(uri => {
             if(isValidTestFile(uri)){
                 validTestFiles.push(uri);
@@ -15,8 +15,8 @@ export function discoverAllFilesInWorkspace() {
     return validTestFiles;
 }
 
-export async function getAllFilesWithEnding() {
-    return await vscode.workspace.findFiles("**/*.{pl,plt}");
+export function getAllFilesWithEnding() {
+    return vscode.workspace.findFiles("**/*.{pl,plt}");
 }
 
 export function isValidTestFile(file: TextDocument | Uri): boolean{
@@ -42,7 +42,7 @@ export function getLabelFromTestSuitFile(file: Uri | TextDocument): string {
     var fileContent: string = file instanceof Uri ? fs.readFileSync(file.fsPath).toString() : file.getText();
     var lines: string[] = fileContent.split("\n");
 
-    for(var line in lines){
+    for(var line of lines){
         const match = line.match(regex);
         if(match && match[1]){
             result = match[1];
