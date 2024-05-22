@@ -14,10 +14,15 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
         });
 
         try {
-            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests -> true ; true)" -t halt`;
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests -> true ; true)" -t halt 2>&1`;
 
-            const result = execSync(command, {encoding: 'utf-8'});
-            parseTestResults("result.status?.toString()");
+            const result = exec(command, {encoding: 'utf-8'}, (error, stdout, stderr) => {
+                if(error){
+                    throw error;
+                }
+                var testResults = parseTestResults("result.stdout?.emit");
+                updateUIWithResults(testResults, test, run);
+            });
         } catch (e){
             console.log("Error executing tests: " + e);
         }
@@ -29,12 +34,16 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
     return new TestResult(TestResultKind.Passed, "Error Text", "warningText", "TestSuitName", "TestName", Date.now(), Date.now());
 }
 
-function parseTestResults(stdout: string) {
+function parseTestResults(stdout: string): TestResult[] {
     var lines: string[] = stdout.split("\n");
-    var line: string
-    return "";
+    var line: string;
+    return [];
 }
 
+
+function updateUIWithResults(testResults: TestResult[], test: TestItem, run: TestRun) {
+    throw new Error("Function not implemented.");
+}
 //Alle tests
 //swipl -s geradeVorfahrtTest.pl -g run_tests -t halt
 
