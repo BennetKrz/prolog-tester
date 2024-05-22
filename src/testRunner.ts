@@ -20,7 +20,7 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
                 if(error){
                     throw error;
                 }
-                var testResults = parseTestResults("result.stdout?.emit");
+                var testResults = parseTestResults(stdout);
                 updateUIWithResults(testResults, test, run);
             });
         } catch (e){
@@ -35,9 +35,18 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
 }
 
 function parseTestResults(stdout: string): TestResult[] {
-    var lines: string[] = stdout.split("\n");
-    var line: string;
-    return [];
+    console.log(stdout);
+    var lines: string[] = stdout.split("\r\n");
+
+    var isStart: boolean = true;
+    var results: TestResult[] = [];
+
+    lines.forEach(line => {
+        if(isStart){
+            
+        }
+    });
+    return results;
 }
 
 
