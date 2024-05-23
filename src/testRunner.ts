@@ -56,16 +56,15 @@ function parseTestResults(stdout: string, testSuitName: string): TestResult[] {
 
         //Parsing:
         console.log(line);
-        if(line.includes("[")){
+        if(line.includes("[") && line.includes(testSuitName)){
             var testName = getNameFromTestResultLine(line);
             var testFailed: boolean = line.includes("**FAILED");
-            var text: string[] = [];
-            for(var k = i + 1; k < lines.length; k++){
-                text.push(lines[k]);
-            }
+            var nextIndex = getIndexOfNextTest(lines, i, testSuitName);
+            var text = lines.slice(i + 1, nextIndex as number);
+            
             var testResult: TestResult = new TestResult(testFailed ? TestResultKind.Failed : TestResultKind.Passed,
                 testFailed ? text : null,
-                null,
+                testFailed ? null : text,
                 testSuitName,
                 testName,
                 Date.now(),
@@ -79,11 +78,27 @@ function parseTestResults(stdout: string, testSuitName: string): TestResult[] {
 }
 
 function getNameFromTestResultLine(line: string) {
-    return line.substring(line.indexOf(":"), line.indexOf("."));
+    return line.substring(line.indexOf(":") + 1, line.indexOf(".") - 1);
+}
+
+function getIndexOfNextTest(lines: string[], curIndex: number, suitName: string): Number {
+    for(var i: number = curIndex + 1; i < lines.length; i++){
+        if((lines[i].includes("[") && lines[i].includes(suitName)) || lines[i].includes("% End unit ")){
+            return i;
+        }
+    }
+    return curIndex;
 }
 
 function updateUIWithResults(testResults: TestResult[], test: TestItem, run: TestRun) {
-    throw new Error("Function not implemented.");
+    test.children.forEach(child => {
+        var result: TestResult = testResults.filter(r => r.testName === child.id)[0];
+        if(result.resultKind === TestResultKind.Passed){
+            run.passed(child, result.endTime - result.startTime);
+        } else {
+            run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.endTime - result.startTime);
+        }
+    });
 }
 //Alle tests
 //swipl -s geradeVorfahrtTest.pl -g run_tests -t halt
