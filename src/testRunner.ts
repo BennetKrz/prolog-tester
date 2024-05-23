@@ -1,6 +1,7 @@
-import { ExtensionKind, TestItem, TestRun } from "vscode";
+import * as vscode from 'vscode';
+import { TestItem, TestRun } from "vscode";
 import { TestResult, TestResultKind } from "./testResult";
-import { ExecException, ExecSyncOptionsWithStringEncoding, exec, execSync, spawn, spawnSync } from "child_process";
+import { exec } from "child_process";
 
 export async function runTest(run: TestRun, test: TestItem): Promise<TestResult> {
     //Hat children -> ist eine test suit, können alle aufeinmal laufen
@@ -14,13 +15,14 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
         });
 
         try {
-            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests -> true ; true)" -t halt 2>&1`;
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests(${testSuitName}) -> true ; true)" -t halt 2>&1`;
 
             const result = exec(command, {encoding: 'utf-8'}, (error, stdout, stderr) => {
                 if(error){
                     throw error;
                 }
-                var testResults = parseTestResults(stdout);
+                var testResults = parseTestResults(stdout, testSuitName);
+                var failedResults = testResults.filter(r => r.resultKind === TestResultKind.Failed);
                 updateUIWithResults(testResults, test, run);
             });
         } catch (e){
@@ -31,24 +33,54 @@ export async function runTest(run: TestRun, test: TestItem): Promise<TestResult>
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    return new TestResult(TestResultKind.Passed, "Error Text", "warningText", "TestSuitName", "TestName", Date.now(), Date.now());
+    return new TestResult(TestResultKind.Passed, ["Error Text"], ["warningText"], "TestSuitName", "TestName", Date.now(), Date.now());
 }
 
-function parseTestResults(stdout: string): TestResult[] {
+function parseTestResults(stdout: string, testSuitName: string): TestResult[] {
     console.log(stdout);
     var lines: string[] = stdout.split("\r\n");
 
     var isStart: boolean = true;
     var results: TestResult[] = [];
 
-    lines.forEach(line => {
+    for(var i = 0; i < lines.length; i++){
+        var line = lines[i];
         if(isStart){
-            
+            if(!line.startsWith("% Start unit:")) {
+                continue;
+            }
+            console.log("Jetzt beginnt der Tatsächliche Test Result");
+            isStart = false;
+            continue;
         }
-    });
+
+        //Parsing:
+        console.log(line);
+        if(line.includes("[")){
+            var testName = getNameFromTestResultLine(line);
+            var testFailed: boolean = line.includes("**FAILED");
+            var text: string[] = [];
+            for(var k = i + 1; k < lines.length; k++){
+                text.push(lines[k]);
+            }
+            var testResult: TestResult = new TestResult(testFailed ? TestResultKind.Failed : TestResultKind.Passed,
+                testFailed ? text : null,
+                null,
+                testSuitName,
+                testName,
+                Date.now(),
+                Date.now()
+            );
+            results.push(testResult);
+        }
+    }
+    
     return results;
 }
 
+function getNameFromTestResultLine(line: string) {
+    return line.substring(line.indexOf(":"), line.indexOf("."));
+}
 
 function updateUIWithResults(testResults: TestResult[], test: TestItem, run: TestRun) {
     throw new Error("Function not implemented.");
