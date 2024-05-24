@@ -46,6 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const queue: TestItem[] = [];
 
 		var source = request.include ? request.include : ctrl.items;
+
 		source.forEach(test => {
 			queue.push(test);
 		});
@@ -57,24 +58,27 @@ export function activate(context: vscode.ExtensionContext) {
 
 				var results: TestResult[] = runTest(run, test);
 
-				test.children.forEach(child => {
-					var result: TestResult = results.filter(r => r.testName === child.id)[0];
+				if(test.children && test.children.size > 0){
+					test.children.forEach(child => {
+						var result: TestResult = results.filter(r => r.testName === child.id)[0];
+						if(result.resultKind === TestResultKind.Passed){
+							run.passed(child);
+						} else {
+							run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
+						}
+					});
+				} else {
+					var result: TestResult = results[0];
 					if(result.resultKind === TestResultKind.Passed){
-						run.passed(child);
+						run.passed(test, result.duration ? result.duration : undefined);
 					} else {
-						run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
+						run.failed(test, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
 					}
-				});
+				}
+
 
 				if(token.isCancellationRequested){
-					queue.forEach(test => {
-						if(test.children){
-							test.children.forEach(t => {
-								run.skipped(t);
-							});
-						}
-						run.skipped(test);
-					});
+					onCancellationRequested(queue, run);
 					break;
 				}
 			}
@@ -82,6 +86,17 @@ export function activate(context: vscode.ExtensionContext) {
 		run.end();
 	}
 	
+	function onCancellationRequested(queue: vscode.TestItem[], run: vscode.TestRun) {
+		queue.forEach(test => {
+			if (test.children) {
+				test.children.forEach(t => {
+					run.skipped(t);
+				});
+			}
+			run.skipped(test);
+		});
+	}
+
 	function parseTestsInDocument(document: vscode.TextDocument | undefined): void {
 		if(document && isValidTestFile(document)){
 			registerTestFile(parseTestsInFile(document), document);

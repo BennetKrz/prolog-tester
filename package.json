@@ -7,15 +7,27 @@
     "vscode": "^1.89.0"
   },
   "categories": [
-    "Other"
+    "Testing"
   ],
-  "activationEvents": [],
+  "pricing": "Free",
+  "author": {"name": "Bennet Krzenzck",
+  "email": "bennetkrzenzck@t-online.de"},
+  "activationEvents": ["onLanguage:prolog"],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
+    "languages": [
       {
-        "command": "prolog-tester.helloWorld",
-        "title": "Hello World"
+        "id": "prolog",
+        "aliases": [
+          "swipl",
+          "Prolog",
+          "SWIP-Prolog"
+        ],
+        "extensions": [
+          ".pl",
+          ".plt"
+        ],
+        "configuration": ""
       }
     ]
   },
@@ -37,5 +49,14 @@
     "typescript": "^5.4.5",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.3.9"
+  },
+  "license":"MIT",
+  "bugs": {
+    "url": "https://github.com/BennetKrz/prolog-tester",
+    "email": "bennetkrzenzck@t-online.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BennetKrz/prolog-tester"
   }
 }

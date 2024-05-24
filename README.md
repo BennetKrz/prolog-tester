@@ -1,71 +1,39 @@
 # prolog-tester README
 
-This is the README for your extension "prolog-tester". After writing up a brief description, we recommend including the following sections.
+This extention is adds the ability to execute and watch your Prolog Testfiles.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
+Automatically scans *.pl and *.plt files for tests and adds these to the VSCode Test Explorer.
+You can execute all tests in a given file or specific test cases only.
+It showes you the complete error at the test.
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Developed and tested under windows. Use SWIP-Prolog. Make sure your swipl.exe is added to your path variable.
+So that the files will be recognized they need to have the .pl or .plt file ending.
+
+This extension relies on the plunit libary for prolog.
+It scans files for ":- begin_tests({your Test Suit name here})."
+A test Suit should end with "end_tests({your Test Suit name here})."
+Between you can add as much test cases as you like by writing: 
+"test({A Name for each test Case}) :-
+    yourPredicateToTest(InValue, Out),
+    assertion(Out == [1,2,3,4])."
+
+Dont put a :- halt instruction at the end of your test-files.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+At this point there are no settings.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+The parsing of the TestResults is very crappy and may break in the future or with different prolog versions as the test-output changes over time...
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+This is my first extension and made in a hurry, as i need this extension for a university-project...
 
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release of this Extension - barly works by now

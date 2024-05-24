@@ -24,7 +24,28 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] {
             console.log("Error executing tests: " + e);
         }
     } else { //Nur einzelner test
-        console.log("Einzelner Test" + test.uri?.fsPath);
+        if(!test.parent){
+            throw new Error("Test does not belong to a test Suit and cant be executed by prolog");
+        }
+        var testName = test.label;
+        var testSuitName = test.parent.label;
+
+        run.started(test);
+        
+        try {
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests(${testSuitName}:${testName}) -> true ; true)" -t halt 2>&1`;
+
+            var startTime = Date.now();
+            var out = execSync(command, {encoding: 'utf-8'});
+            var endTime = Date.now();
+
+            var results = parseTestResults(out, testSuitName);
+            results[0].duration = endTime - startTime;
+            return results;
+        } catch (e){
+            
+        }
+
     }
 
     return result;
