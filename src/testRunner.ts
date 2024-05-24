@@ -1,39 +1,31 @@
 import * as vscode from 'vscode';
 import { TestItem, TestRun } from "vscode";
 import { TestResult, TestResultKind } from "./testResult";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 
-export async function runTest(run: TestRun, test: TestItem): Promise<TestResult> {
+export function runTest(run: TestRun, test: TestItem): TestResult[] {
     //Hat children -> ist eine test suit, können alle aufeinmal laufen
+    var result: TestResult[] = [];
+
     if(test.children && test.children.size > 0){
         console.log("Test Suit: " + test.uri?.fsPath);
 
         var testSuitName: string = test.label;
 
-        test.children.forEach(test => {
-            run.started(test);
-        });
-
         try {
             const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests(${testSuitName}) -> true ; true)" -t halt 2>&1`;
 
-            const result = exec(command, {encoding: 'utf-8'}, (error, stdout, stderr) => {
-                if(error){
-                    throw error;
-                }
-                var testResults = parseTestResults(stdout, testSuitName);
-                var failedResults = testResults.filter(r => r.resultKind === TestResultKind.Failed);
-                updateUIWithResults(testResults, test, run);
-            });
+            var out = execSync(command, {encoding: 'utf-8'});
+            return parseTestResults(out, testSuitName);
         } catch (e){
             console.log("Error executing tests: " + e);
         }
     } else { //Nur einzelner test
         console.log("Einzelner Test" + test.uri?.fsPath);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        
     }
 
-    return new TestResult(TestResultKind.Passed, ["Error Text"], ["warningText"], "TestSuitName", "TestName", Date.now(), Date.now());
+    return result;
 }
 
 function parseTestResults(stdout: string, testSuitName: string): TestResult[] {

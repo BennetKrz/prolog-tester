@@ -3,7 +3,7 @@ import { CancellationToken, TestItem, TestRun, TestRunRequest, TextDocument, Uri
 import { discoverAllFilesInWorkspace, getLabelFromTestSuitFile, isValidTestFile } from './utils';
 import { parseTestsInFile } from './parsing';
 import { runTest } from './testRunner';
-import { TestResult } from './testResult';
+import { TestResult, TestResultKind } from './testResult';
 
 var testSuits: Map<string, TestItem> = new Map<string, TestItem>();
 
@@ -56,16 +56,23 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 			run.end();
 		});
-
+		
 		while(queue.length > 0 && !token.isCancellationRequested){
 			const test = queue.shift();
 			if(test){
 				run.started(test);
-				var testResult: TestResult = await runTest(run, test);
+
+				var results: TestResult[] = runTest(run, test);
+				test.children.forEach(child => {
+					var result: TestResult = results.filter(r => r.testName === child.id)[0];
+					if(result.resultKind === TestResultKind.Passed){
+						run.passed(child, result.endTime - result.startTime);
+					} else {
+						run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.endTime - result.startTime);
+					}
+				});
 				if(token.isCancellationRequested){
 					run.skipped(test);
-				} else if(testResult){
-					run.passed(test);
 				}
 			}
 		}
