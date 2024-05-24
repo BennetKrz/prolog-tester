@@ -19,8 +19,8 @@
       {
         "id": "prolog",
         "aliases": [
-          "swipl",
           "Prolog",
+          "swipl",
           "SWIP-Prolog"
         ],
         "extensions": [
@@ -52,7 +52,7 @@
   },
   "license":"MIT",
   "bugs": {
-    "url": "https://github.com/BennetKrz/prolog-tester",
+    "url": "https://github.com/BennetKrz/prolog-tester/issues/new",
     "email": "bennetkrzenzck@t-online.de"
   },
   "repository": {
