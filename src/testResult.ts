@@ -11,7 +11,6 @@ export class TestResult {
         public readonly warningText: string[] | null,
         public readonly testSuitName: string,
         public readonly testName: string,
-        public readonly startTime: number,
-        public readonly endTime: number
+        public duration: number | null
     ) { }
 }

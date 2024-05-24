@@ -51,3 +51,26 @@ export function getLabelFromTestSuitFile(file: Uri | TextDocument): string {
     }
     return result;
 }
+
+export function getTestInfosFromFile(file: Uri | TextDocument): [number, number, number, number] {
+	var fileContent: string = file instanceof Uri ? fs.readFileSync(file.fsPath).toString() : file.getText();
+    var lines: string[] = fileContent.split("\n");
+
+    var startLine: number = 0;
+    var startCharPos: number = 0;
+    var endLine: number = 0;
+    var endCharPos: number = 0;
+
+    for(var i = 0; i < lines.length; i++){
+        var line = lines[i];
+        if(line.includes("begin_tests")){
+            startLine = i;
+            startCharPos = line.indexOf("begin_tests");
+        }
+        if(line.includes("end_tests")){
+            endLine = i;
+            endCharPos = line.indexOf("end_tests");
+        }
+    }
+    return [startLine, startCharPos, endLine, endCharPos];
+}

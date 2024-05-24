@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { CancellationToken, TestItem, TestRun, TestRunRequest, TextDocument, Uri } from 'vscode';
-import { discoverAllFilesInWorkspace, getLabelFromTestSuitFile, isValidTestFile } from './utils';
+import { discoverAllFilesInWorkspace, getLabelFromTestSuitFile, getTestInfosFromFile, isValidTestFile } from './utils';
 import { parseTestsInFile } from './parsing';
 import { runTest } from './testRunner';
 import { TestResult, TestResultKind } from './testResult';
@@ -49,13 +49,6 @@ export function activate(context: vscode.ExtensionContext) {
 		source.forEach(test => {
 			queue.push(test);
 		});
-
-		token.onCancellationRequested(() => {
-			queue.forEach(test => {
-				run.skipped(test);
-			});
-			run.end();
-		});
 		
 		while(queue.length > 0 && !token.isCancellationRequested){
 			const test = queue.shift();
@@ -63,16 +56,26 @@ export function activate(context: vscode.ExtensionContext) {
 				run.started(test);
 
 				var results: TestResult[] = runTest(run, test);
+
 				test.children.forEach(child => {
 					var result: TestResult = results.filter(r => r.testName === child.id)[0];
 					if(result.resultKind === TestResultKind.Passed){
-						run.passed(child, result.endTime - result.startTime);
+						run.passed(child);
 					} else {
-						run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.endTime - result.startTime);
+						run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
 					}
 				});
+
 				if(token.isCancellationRequested){
-					run.skipped(test);
+					queue.forEach(test => {
+						if(test.children){
+							test.children.forEach(t => {
+								run.skipped(t);
+							});
+						}
+						run.skipped(test);
+					});
+					break;
 				}
 			}
 		}
@@ -85,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	function registerTestFile(allTestsInFile: Set<string>, file: Uri | TextDocument): void {
+	function registerTestFile(allTestsInFile: Set<[string, number, number, number, number]>, file: Uri | TextDocument): void {
 		if(allTestsInFile.size === 0){
 			return;
 		}
@@ -94,12 +97,15 @@ export function activate(context: vscode.ExtensionContext) {
 		var uri: Uri = file instanceof Uri ? file : file.uri;
 		
 		var testSuit: TestItem = ctrl.createTestItem(id, getLabelFromTestSuitFile(file), uri);
+		var testSuitRange: [number, number, number, number] = getTestInfosFromFile(file);
 		testSuit.canResolveChildren = true;
+		testSuit.range = new vscode.Range(testSuitRange[0], testSuitRange[1], testSuitRange[2], testSuitRange[3]);
 		
-		allTestsInFile.forEach(testName => {
-			var test: TestItem = ctrl.createTestItem(testName, testName, uri);
-			test.sortText = testName.padStart(5, "0");
+		allTestsInFile.forEach(testInfos => {
+			var test: TestItem = ctrl.createTestItem(testInfos[0], testInfos[0], uri);
+			test.sortText = testInfos[0].padStart(5, "0");
 			testSuit.children.add(test);
+			test.range = new vscode.Range(testInfos[1], testInfos[2], testInfos[3], testInfos[4]);
 		});
 		
 		testSuits.set(id, testSuit);
