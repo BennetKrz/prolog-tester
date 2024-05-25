@@ -16,9 +16,11 @@ This extension relies on the plunit libary for prolog.
 It scans files for ":- begin_tests({your Test Suit name here})."
 A test Suit should end with "end_tests({your Test Suit name here})."
 Between you can add as much test cases as you like by writing: 
-"test({A Name for each test Case}) :-
+test("{A Name for each test Case}") :-
     yourPredicateToTest(InValue, Out),
-    assertion(Out == [1,2,3,4])."
+    assertion(Out == [1,2,3,4]).
+
+A test-case should be name either with just numbers or by giving them a sensible name written between quotes.
 
 Dont put a :- halt instruction at the end of your test-files.
 
