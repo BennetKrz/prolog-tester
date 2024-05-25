@@ -1,8 +1,8 @@
 {
   "name": "prolog-tester",
   "displayName": "Prolog Tester",
-  "description": "tbd",
-  "version": "0.0.1",
+  "description": "A VS Code extension which adds support for Prolog unit tests to the VS Code test explorer.",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.89.0"
   },
