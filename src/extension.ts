@@ -56,13 +56,19 @@ export function activate(context: vscode.ExtensionContext) {
 			if(test){
 				run.started(test);
 
+				var startTime = Date.now();
+
 				var results: TestResult[] = runTest(run, test);
+
+				var endTime = Date.now();
+				var testsPassed = results.filter(r => r.resultKind === TestResultKind.Passed).length;
+				var timePerTest = (endTime - startTime) / testsPassed;
 
 				if(test.children && test.children.size > 0){
 					test.children.forEach(child => {
 						var result: TestResult = results.filter(r => r.testName === child.id)[0];
 						if(result.resultKind === TestResultKind.Passed){
-							run.passed(child);
+							run.passed(child, timePerTest);
 						} else {
 							run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
 						}
