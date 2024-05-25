@@ -18,7 +18,7 @@ A VS Code extension which adds support for Prolog unit tests to the VS Code test
 - Use SWIP-Prolog.
 - Make sure your swipl.exe is added to your path variable.
 - In order to get the tests recognized, they need to be in a *.pl or *.plt file.
-- This extension relies on the plunit libary for prolog. (Should come preinstalled with SWIP-Prolog)
+- This extension relies on the plunit libary for Prolog. (Should come preinstalled with SWIP-Prolog)
 
 ## How to use
 - Create a separate file `yourFileName.pl` for your predicate you want to test.
@@ -37,7 +37,7 @@ A VS Code extension which adds support for Prolog unit tests to the VS Code test
     - Or numbering them like this: `test(0) :- ...`.
 
 Here is a full example:
-```
+```plaintext
 :- use_module(library(plunit)).
 
 :- consult('..\\myPredicate.pl').
@@ -52,7 +52,7 @@ test("FirstTest") :-
 ```
 ## Extension Settings
 
-Currently there are no setting.
+Currently there are no settings.
 
 ## Known Issues
 

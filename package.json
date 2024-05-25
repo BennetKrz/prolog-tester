@@ -58,5 +58,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BennetKrz/prolog-tester"
-  }
+  },
+  "publisher": "Bennet Krzenzck",
+  "icon": "logo.png"
 }
