@@ -1,6 +1,6 @@
 {
   "name": "prolog-tester",
-  "displayName": "Prolog Tester",
+  "displayName": "Prolog Tests",
   "description": "A VS Code extension which adds support for Prolog unit tests to the VS Code test explorer.",
   "version": "1.0.0",
   "engines": {
@@ -59,6 +59,7 @@
     "type": "git",
     "url": "https://github.com/BennetKrz/prolog-tester"
   },
-  "publisher": "Bennet Krzenzck",
-  "icon": "logo.png"
+  "publisher": "BennetKrzenzck",
+  "icon": "logo.png",
+  "homepage": "https://github.com/BennetKrz/prolog-tester"
 }
