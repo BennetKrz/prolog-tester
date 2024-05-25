@@ -61,13 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 				var results: TestResult[] | string[] = runTest(run, test);
 
 				if(typeof results[0] === "string"){
-					run.failed(test, new vscode.TestMessage(results.join("\n")));
-					if(test.children){
-						test.children.forEach(t => {
-							run.failed(t, new vscode.TestMessage(results.join("\n")));
-						});
-					}
-					run.end();
+					handleErrorInPrologFile(run, test, results);
 					return;
 				}
 
@@ -77,28 +71,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 				if(test.children && test.children.size > 0){
-					test.children.forEach(child => {
-						var correspondingTestResult = (results as TestResult[]).filter(r => r.testName === child.id);
-						if(correspondingTestResult.length !== 1){
-							run.failed(child, new vscode.TestMessage("Test was not executed properly. Check that the name of the test in quotes?"), 0);
-						} else {
-							var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
-							if(result.resultKind === TestResultKind.Passed){
-								run.passed(child, timePerTest);
-							} else {
-								run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
-							}
-						}
-					});
+					handleTestSuitResults(test, results, run, timePerTest);
 				} else {
-					var result: TestResult = results[0];
-					if(result.resultKind === TestResultKind.Passed){
-						run.passed(test, result.duration ? result.duration : undefined);
-					} else {
-						run.failed(test, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
-					}
+					handleSingleTestResult(results, run, test);
 				}
-
 
 				if(token.isCancellationRequested){
 					onCancellationRequested(queue, run);
@@ -156,6 +132,41 @@ export function activate(context: vscode.ExtensionContext) {
 			ctrl.items.add(testSuit);
 		});
 	}	
+}
+
+function handleErrorInPrologFile(run: vscode.TestRun, test: vscode.TestItem, results: TestResult[] | string[]) {
+	run.failed(test, new vscode.TestMessage(results.join("\n")));
+	if (test.children) {
+		test.children.forEach(t => {
+			run.failed(t, new vscode.TestMessage(results.join("\n")));
+		});
+	}
+	run.end();
+}
+
+function handleTestSuitResults(test: vscode.TestItem, results: TestResult[] | string[], run: vscode.TestRun, timePerTest: number) {
+	test.children.forEach(child => {
+		var correspondingTestResult = (results as TestResult[]).filter(r => r.testName === child.id);
+		if (correspondingTestResult.length !== 1) {
+			run.failed(child, new vscode.TestMessage("Test was not executed properly. Check that the name of the test in quotes?"), 0);
+		} else {
+			var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
+			if (result.resultKind === TestResultKind.Passed) {
+				run.passed(child, timePerTest);
+			} else {
+				run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number : undefined);
+			}
+		}
+	});
+}
+
+function handleSingleTestResult(results: TestResult[] | string[], run: vscode.TestRun, test: vscode.TestItem) {
+	var result: TestResult = results[0] as TestResult;
+	if (result.resultKind === TestResultKind.Passed) {
+		run.passed(test, result.duration ? result.duration : undefined);
+	} else {
+		run.failed(test, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number : undefined);
+	}
 }
 
 export function deactivate() {}
