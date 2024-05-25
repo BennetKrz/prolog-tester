@@ -78,11 +78,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 				if(test.children && test.children.size > 0){
 					test.children.forEach(child => {
-						var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
-						if(result.resultKind === TestResultKind.Passed){
-							run.passed(child, timePerTest);
+						var correspondingTestResult = (results as TestResult[]).filter(r => r.testName === child.id);
+						if(correspondingTestResult.length !== 1){
+							run.failed(child, new vscode.TestMessage("Test was not executed properly. Check that the name of the test in quotes?"), 0);
 						} else {
-							run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
+							var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
+							if(result.resultKind === TestResultKind.Passed){
+								run.passed(child, timePerTest);
+							} else {
+								run.failed(child, new vscode.TestMessage(result.errorText ? result.errorText.join("\n") : ""), result.duration ? result.duration as number: undefined);
+							}
 						}
 					});
 				} else {

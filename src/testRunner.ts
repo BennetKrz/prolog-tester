@@ -23,7 +23,7 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
         } catch (e){
             console.log("Error executing tests: " + e);
         }
-    } else { //Nur einzelner test
+    } else {
         if(!test.parent){
             throw new Error("Test does not belong to a test Suit and cant be executed by prolog");
         }
@@ -40,16 +40,19 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
             var endTime = Date.now();
 
             var results = parseTestResults(out, testSuitName);
-            
+
+            if(results.length > 1){
+                return ["Test was not executed properly. Check that the name of the test in quotes?"];
+            }
+
             if(typeof results[0] === "string"){
                 return results;
             }
             results[0].duration = endTime - startTime;
             return results;
         } catch (e){
-            
+            console.log("Error executing tests: " + e);
         }
-
     }
 
     return result;
@@ -58,8 +61,3 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
 export function getTestDurationOnFail(line: string): number | null {
     return line.includes("**FAILED") ? ((Number.parseFloat(line.substring(line.indexOf("(") + 1, line.indexOf(")") - 3))) * 1000) + 1 : null;
 }
-//Alle tests
-//swipl -s geradeVorfahrtTest.pl -g run_tests -t halt
-
-//Ein bestimmter test
-//swipl -s geradeVorfahrtTest.pl -g "run_tests(geradeVorfahrtTest:0)" -t halt
