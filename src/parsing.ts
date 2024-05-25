@@ -1,6 +1,6 @@
 import { TextDocument } from "vscode";
 import * as fs from "fs";
-import { getNameFromTestResultLine, getTestDurationOnFail } from './testRunner';
+import { getTestDurationOnFail } from './testRunner';
 import { TestResult, TestResultKind } from "./testResult";
 
 export function parseTestsInFile(file: string | TextDocument): Set<[string, number, number, number, number]>{
@@ -42,7 +42,7 @@ function getIndexOfNextTestGeneral(lines: string[], curIndex: number): number {
     return curIndex;
 }
 
-export function parseTestResults(stdout: string, testSuitName: string): TestResult[] {
+export function parseTestResults(stdout: string, testSuitName: string): TestResult[] | string[] {
     var lines: string[] = stdout.split("\r\n");
 
     var isStart: boolean = true;
@@ -78,6 +78,10 @@ export function parseTestResults(stdout: string, testSuitName: string): TestResu
         }
     }
 
+    if(results.length === 0){
+        return lines;
+    }
+
     return results;
 }
 
@@ -88,4 +92,8 @@ function getIndexOfNextTestResult(lines: string[], curIndex: number, suitName: s
         }
     }
     return curIndex;
+}
+
+function getNameFromTestResultLine(line: string) {
+    return line.substring(line.indexOf(":") + 1, line.indexOf(".") - 1);
 }

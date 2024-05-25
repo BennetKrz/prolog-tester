@@ -4,7 +4,7 @@ import { TestResult } from "./testResult";
 import { execSync } from "child_process";
 import { parseTestResults } from './parsing';
 
-export function runTest(run: TestRun, test: TestItem): TestResult[] {
+export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
     var result: TestResult[] = [];
 
     if(test.children && test.children.size > 0){
@@ -40,6 +40,10 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] {
             var endTime = Date.now();
 
             var results = parseTestResults(out, testSuitName);
+            
+            if(typeof results[0] === "string"){
+                return results;
+            }
             results[0].duration = endTime - startTime;
             return results;
         } catch (e){
@@ -49,10 +53,6 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] {
     }
 
     return result;
-}
-
-export function getNameFromTestResultLine(line: string) {
-    return line.substring(line.indexOf(":") + 1, line.indexOf(".") - 1);
 }
 
 export function getTestDurationOnFail(line: string): number | null {
