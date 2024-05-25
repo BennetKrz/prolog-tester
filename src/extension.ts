@@ -148,7 +148,7 @@ function handleTestSuitResults(test: vscode.TestItem, results: TestResult[] | st
 	test.children.forEach(child => {
 		var correspondingTestResult = (results as TestResult[]).filter(r => r.testName === child.id);
 		if (correspondingTestResult.length !== 1) {
-			run.failed(child, new vscode.TestMessage("Test was not executed properly. Check that the name of the test in quotes?"), 0);
+			run.failed(child, new vscode.TestMessage("Test was not executed properly. Perhabs the name of the test is not in quotes or the name of the test is a duplicate"), 0);
 		} else {
 			var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
 			if (result.resultKind === TestResultKind.Passed) {

@@ -42,7 +42,7 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
             var results = parseTestResults(out, testSuitName);
 
             if(results.length > 1){
-                return ["Test was not executed properly. Check that the name of the test in quotes?"];
+                return ["Test was not executed properly. Perhabs the name of the test is not in quotes or the name of the test is a duplicate"];
             }
 
             if(typeof results[0] === "string"){
