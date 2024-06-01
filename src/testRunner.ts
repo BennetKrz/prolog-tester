@@ -16,7 +16,7 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
         });
 
         try {
-            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests(${testSuitName}) -> true ; true)" -t halt 2>&1`;
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log),timeout(20)]) , (run_tests(${testSuitName}) -> true ; true)" -t halt 2>&1`;
 
             var out = execSync(command, {encoding: 'utf-8'});
             return parseTestResults(out, testSuitName);
@@ -33,7 +33,7 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
         run.started(test);
         
         try {
-            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log)]) , (run_tests(${testSuitName}:${testName}) -> true ; true)" -t halt 2>&1`;
+            const command = `swipl -s ${test.uri?.fsPath} -g "set_test_options([format(log),timeout(20)]) , (run_tests(${testSuitName}:${testName}) -> true ; true)" -t halt 2>&1`;
 
             var startTime = Date.now();
             var out = execSync(command, {encoding: 'utf-8'});
@@ -42,7 +42,7 @@ export function runTest(run: TestRun, test: TestItem): TestResult[] | string[] {
             var results = parseTestResults(out, testSuitName);
 
             if(results.length > 1){
-                return ["Test was not executed properly. Perhabs the name of the test is not in quotes or the name of the test is a duplicate"];
+                return ["Test was not executed properly. Name of tests should start with lowercase without quotes and should be distinct."];
             }
 
             if(typeof results[0] === "string"){

@@ -22,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.workspace.onDidOpenTextDocument(e => parseTestsInDocument(e));
 	vscode.workspace.onDidSaveTextDocument(e => parseTestsInDocument(e));
+	vscode.workspace.onDidDeleteFiles(e => removeTestSuiteFilesDeleted(e.files));
+	vscode.workspace.onDidRenameFiles(e => removeTestSuiteFilesRenamed(e.files));
 	vscode.window.onDidChangeActiveTextEditor(e => parseTestsInDocument(e?.document));
 
 	const runProfile: vscode.TestRunProfile = ctrl.createRunProfile(
@@ -101,7 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
 			registerTestFile(parseTestsInFile(document), document);
 		}
 	}
-
+	
 	function registerTestFile(allTestsInFile: Set<[string, number, number, number, number]>, file: Uri | TextDocument): void {
 		if(allTestsInFile.size === 0){
 			return;
@@ -126,6 +128,22 @@ export function activate(context: vscode.ExtensionContext) {
 		
 		updateTestExplorerUI();
 	}
+
+	function removeTestSuiteFilesDeleted(files: readonly vscode.Uri[]): void {
+		files.forEach(file => {
+			testSuits.delete(file.fsPath);
+			ctrl.items.delete(file.fsPath);
+		});
+		updateTestExplorerUI();
+	}
+	
+	function removeTestSuiteFilesRenamed(files: readonly {oldUri: vscode.Uri, newUri: vscode.Uri}[]): void {
+		files.forEach(file => {
+			testSuits.delete(file.oldUri.fsPath);
+			ctrl.items.delete(file.oldUri.fsPath);
+		});
+		updateTestExplorerUI();
+	}
 	
 	function updateTestExplorerUI() {
 		testSuits.forEach(testSuit => {
@@ -148,7 +166,7 @@ function handleTestSuitResults(test: vscode.TestItem, results: TestResult[] | st
 	test.children.forEach(child => {
 		var correspondingTestResult = (results as TestResult[]).filter(r => r.testName === child.id);
 		if (correspondingTestResult.length !== 1) {
-			run.failed(child, new vscode.TestMessage("Test was not executed properly. Perhabs the name of the test is not in quotes or the name of the test is a duplicate"), 0);
+			run.failed(child, new vscode.TestMessage("Test was not executed properly. Name of tests should start with lowercase without quotes and should be distinct."), 0);
 		} else {
 			var result: TestResult = (results as TestResult[]).filter(r => r.testName === child.id)[0];
 			if (result.resultKind === TestResultKind.Passed) {

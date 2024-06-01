@@ -21,7 +21,7 @@ export function parseTestsInFile(file: string | TextDocument): Set<[string, numb
         var endCharPos: number;
 
         if(match && match[1]){
-            name = match[1].replaceAll("\"", "");
+            name = match[1];
             startCharPos = line.indexOf("test");
             endLine = getIndexOfNextTestGeneral(lines, i) - 1;
             endCharPos = lines[endLine].lastIndexOf(".");
