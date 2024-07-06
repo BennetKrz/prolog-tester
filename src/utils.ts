@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TextDocument, Uri } from "vscode";
 import * as fs from "fs";
-import { parseTestsInFile } from './parsing';
 
-export async function discoverAllFilesInWorkspace() {
+export async function discoverAllFilesInWorkspace() {    
+
     var validTestFiles: Uri[] = [];
     await getAllFilesWithEnding().then(files => {
         files.forEach(uri => {
@@ -16,13 +16,13 @@ export async function discoverAllFilesInWorkspace() {
 }
 
 export function getAllFilesWithEnding() {
-    return vscode.workspace.findFiles("**/*.{pl,plt}");
+    return vscode.workspace.findFiles("**/*.{" + getFileExtensions().join(",") + "}");
 }
 
 export function isValidTestFile(file: TextDocument | Uri): boolean{
     var filePath = file instanceof Uri ? file.fsPath : (file as TextDocument).fileName;
 
-    if(!filePath.endsWith(".pl") && !filePath.endsWith(".plt")){
+    if(getFileExtensions().every(e => !filePath.endsWith("." + e))){
         return false;
     }
     
@@ -73,4 +73,13 @@ export function getTestInfosFromFile(file: Uri | TextDocument): [number, number,
         }
     }
     return [startLine, startCharPos, endLine, endCharPos];
+}
+
+export function getFileExtensions() : string[] {
+    const config : vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('prologtests');
+    const fileExtensions : string[] |undefined = config.get<string[]>('testFileExtesions');
+
+    return fileExtensions ? fileExtensions
+                                .map(e => e.replace(".", "")) 
+                          : ["pl", "plt"];
 }

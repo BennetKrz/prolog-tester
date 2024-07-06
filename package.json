@@ -29,7 +29,25 @@
         ],
         "configuration": ""
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Prolog Tests",
+      "properties": {
+        "prologtests.testFileExtesions":{
+          "type":"array",
+          "items": {
+            "type": "string"
+          },
+          "default": [".pl", ".plt"],
+          "description": "What filetypes should be seen as test files."
+        },
+        "prologtests.sipExecutablePath":{
+          "type": "string",
+          "default": null,
+          "description": "The path to the executable of SWIP to execute the tests."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
