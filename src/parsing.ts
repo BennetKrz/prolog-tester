@@ -41,7 +41,7 @@ function getIndexOfNextTestGeneral(lines: string[], curIndex: number): number {
 }
 
 export function parseTestResults(stdout: string, testSuitName: string): TestResult[] | string[] {
-    var lines: string[] = stdout.split("\r\n");
+    var lines: string[] = stdout.replaceAll("\r","").split("\n");
 
     var isStart: boolean = true;
     var results: TestResult[] = [];
