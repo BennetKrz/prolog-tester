@@ -65,6 +65,9 @@ The parsing of the TestResults is very crappy and may break in the future or wit
 
 ## Release Notes
 
+
+### 1.1.1
+- [Stephan van der Feest](https://github.com/sabvdf) fixed [two bugs](https://github.com/BennetKrz/prolog-tester/pull/1).
 ### 1.1.0
 - If a file containing tests is renamed or deleted inside VS Code, these tests will now be automatically removed from the test explorer.
 - Added a timeout after which a test automatically fails. Currently, this is 20 seconds. In the future, I want to add a setting to manually set the value.
