@@ -2,6 +2,11 @@
 	"compilerOptions": {
 		"module": "Node16",
 		"target": "ES2022",
+		"types": [
+			"node",
+			"mocha",
+			"vscode"
+		],
 		"outDir": "out",
 		"lib": [
 			"ES2022"
